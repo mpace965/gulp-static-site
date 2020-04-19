@@ -1,0 +1,14 @@
+{
+  "name": "gulp-static-site",
+  "version": "1.0.0",
+  "description": "Static site boilerplate for Gulp",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Matt Pace",
+  "license": "MIT",
+  "dependencies": {
+    "gulp": "^4.0.2"
+  }
+}
