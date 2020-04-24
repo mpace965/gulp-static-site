@@ -4,6 +4,10 @@ const pug = require("gulp-pug");
 const config = require('./config.json');
 
 const paths = {
+  styles: {
+    src: ["src/css/**/*.css"],
+    dest: "build/css"
+  },
   templates: {
     src: ["src/templates/**/*.pug", "!src/templates/layouts/**/*.pug"],
     dest: "build/",
@@ -17,4 +21,10 @@ function templates() {
     .pipe(gulp.dest(paths.templates.dest));
 }
 
-exports.default = templates;
+function styles() {
+  return gulp
+    .src(paths.styles.src)
+    .pipe(gulp.dest(paths.styles.dest));
+}
+
+exports.default = gulp.parallel(templates, styles);
