@@ -9,17 +9,17 @@ const paths = {
     src: ["src/css/**/*.css"],
     dest: "build/css",
   },
-  templates: {
-    src: ["src/templates/**/*.pug", "!src/templates/layouts/**/*.pug"],
+  views: {
+    src: ["src/views/**/*.pug", "!src/views/templates/**/*.pug"],
     dest: "build/",
   },
 };
 
-function templates() {
+function views() {
   return gulp
-    .src(paths.templates.src)
+    .src(paths.views.src)
     .pipe(pug({ locals: config.locals }))
-    .pipe(gulp.dest(paths.templates.dest))
+    .pipe(gulp.dest(paths.views.dest))
     .pipe(
       browserSync.reload({
         stream: true,
@@ -38,7 +38,7 @@ function styles() {
     );
 }
 
-gulp.task("build", gulp.parallel(templates, styles));
+gulp.task("build", gulp.parallel(views, styles));
 
 gulp.task("watch", () => {
   browserSync.init({
@@ -48,7 +48,7 @@ gulp.task("watch", () => {
   });
 
   gulp.watch(paths.styles.src, styles);
-  gulp.watch(paths.templates.src, templates);
+  gulp.watch(paths.views.src, views);
 });
 
 gulp.task("default", gulp.series("build"));
