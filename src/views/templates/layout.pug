@@ -9,7 +9,7 @@ html(lang='en')
       meta(name='viewport', content='width=device-width')
       title
         block title
-          = locals.name
+          = config.name
       link(rel='stylesheet', href='//fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic|Anonymous+Pro:400,700,400italic,700italic|Merriweather:400,700,300')
       link(rel='stylesheet', href='/css/main.css')
       //- Main JS
@@ -20,7 +20,7 @@ html(lang='en')
         block header
           div.logo
             h1
-              a(href=locals.url)= locals.name
+              a(href=config.url)= config.name
             p.description
               | A 
               a(target="_blank", href="https://processing.org/") Processing
@@ -35,6 +35,6 @@ html(lang='en')
           section.about
             //- !=contents['about.md'].html
           section.copy
-            p &copy; #{ new Date().getFullYear() } #{ locals.owner } &mdash; powered by&nbsp;
+            p &copy; #{ new Date().getFullYear() } #{ config.owner } &mdash; powered by&nbsp;
               a(href='https://github.com/jnordberg/wintersmith') Wintersmith
               //- please leave the "powered by" if you use the design

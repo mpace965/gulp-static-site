@@ -18,7 +18,7 @@ const paths = {
 function views() {
   return gulp
     .src(paths.views.src)
-    .pipe(pug({ locals: config.locals }))
+    .pipe(pug({ locals: { config } }))
     .pipe(gulp.dest(paths.views.dest))
     .pipe(
       browserSync.reload({

@@ -1,8 +1,6 @@
 {
-  "locals": {
-    "url": "https://mattspixellibrary.com/",
-    "name": "Matt's Pixel Library",
-    "owner": "Matt Pace",
-    "description": "A Processing sketchbook"
-  }
+  "url": "https://mattspixellibrary.com/",
+  "name": "Matt's Pixel Library",
+  "owner": "Matt Pace",
+  "description": "A Processing sketchbook"
 }
