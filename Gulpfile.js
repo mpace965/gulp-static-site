@@ -3,6 +3,7 @@ const pug = require("gulp-pug");
 const markdownToJson = require("gulp-markdown-to-json");
 const wrap = require("gulp-wrap");
 const rename = require("gulp-rename");
+const noop = require("gulp-noop");
 const browserSync = require("browser-sync").create();
 const MarkdownIt = require("markdown-it");
 const fs = require("fs");
@@ -26,6 +27,9 @@ const paths = {
     src: ["src/css/**/*.css"],
     dest: "build/css",
   },
+  vendor: {
+    dest: "build/vendor/",
+  },
   views: {
     src: [
       "src/views/**/*.pug",
@@ -37,6 +41,10 @@ const paths = {
 
 function makeTemplatePath(templateName) {
   return path.join(TEMPLATES_DIRECTORY, templateName || "layout.pug");
+}
+
+function readJson(path) {
+  return JSON.parse(fs.readFileSync(path));
 }
 
 function articles() {
@@ -63,6 +71,49 @@ function articles() {
     );
 }
 
+function vendor() {
+  try {
+    const vendorConfig = readJson("./vendor.json");
+    const srcList = Object.entries(
+      vendorConfig
+    ).map(([packageName, vendorConfig]) =>
+      path.join("./node_modules/", packageName, vendorConfig.root, "**")
+    );
+
+    function aliasVendoredPackagePath(vendoredPackagePath) {
+      const [packageName] = vendoredPackagePath.split("/");
+      if (vendorConfig[packageName].alias) {
+        return vendoredPackagePath.replace(
+          packageName,
+          vendorConfig[packageName].alias
+        );
+      }
+      return vendoredPackagePath;
+    }
+
+    return gulp
+      .src(srcList, { base: "./node_modules/" })
+      .pipe(
+        rename((path) => {
+          if (path.dirname === ".") {
+            path.basename = aliasVendoredPackagePath(path.basename);
+          } else {
+            path.dirname = aliasVendoredPackagePath(path.dirname);
+          }
+          return path;
+        })
+      )
+      .pipe(gulp.dest(paths.vendor.dest))
+      .pipe(
+        browserSync.reload({
+          stream: true,
+        })
+      );
+  } catch (_) {
+    return gulp.src(".").pipe(noop());
+  }
+}
+
 function views() {
   return gulp
     .src(paths.views.src)
@@ -86,7 +137,7 @@ function styles() {
     );
 }
 
-gulp.task("build", gulp.parallel(articles, styles, views));
+gulp.task("build", gulp.parallel(articles, styles, vendor, views));
 
 gulp.task("watch", () => {
   browserSync.init({
@@ -97,6 +148,7 @@ gulp.task("watch", () => {
 
   gulp.watch(paths.articles.src, articles);
   gulp.watch(paths.styles.src, styles);
+  gulp.watch("vendor.json", vendor);
   gulp.watch(paths.views.src, views);
   gulp.watch(TEMPLATES_DIRECTORY, views);
 });
