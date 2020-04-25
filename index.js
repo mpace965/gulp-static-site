@@ -10,9 +10,9 @@ const paths = {
     src: ["src/articles/**/*.md"],
     dest: "build/articles",
   },
-  styles: {
-    src: ["src/css/**/*.css"],
-    dest: "build/css",
+  resources: {
+    src: ["src/resources/**"],
+    dest: "build/",
   },
   vendor: {
     dest: "build/vendor/",
@@ -45,10 +45,14 @@ module.exports = function (gulp) {
 
   const vendor = require("./src/tasks/vendor")(gulp, paths.vendor);
 
-  const styles = require("./src/tasks/styles")(gulp, paths.styles, browserSync);
+  const resources = require("./src/tasks/resources")(
+    gulp,
+    paths.resources,
+    browserSync
+  );
 
   const clean = () => del(["build"]);
-  const build = gulp.parallel(articles, styles, vendor, views);
+  const build = gulp.parallel(articles, resources, vendor, views);
   const watch = () => {
     browserSync.init({
       server: {
@@ -57,7 +61,7 @@ module.exports = function (gulp) {
     });
 
     gulp.watch(paths.articles.src, articles);
-    gulp.watch(paths.styles.src, styles);
+    gulp.watch(paths.styles.src, resources);
     gulp.watch("vendor.json", vendor);
     gulp.watch(paths.views.src, views);
     gulp.watch(TEMPLATES_DIRECTORY, views);

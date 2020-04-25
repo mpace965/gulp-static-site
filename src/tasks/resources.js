@@ -1,5 +1,5 @@
 module.exports = (gulp, paths, browserSync) => {
-  return function styles() {
+  return function resources() {
     return gulp
       .src(paths.src)
       .pipe(gulp.dest(paths.dest))
