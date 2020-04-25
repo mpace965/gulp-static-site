@@ -5,29 +5,29 @@ const path = require("path");
 const { TEMPLATES_DIRECTORY } = require("./src/config");
 const resolveClientPath = require("./src/resolveClientPath");
 
+const paths = {
+  articles: {
+    src: ["src/articles/**/*.md"],
+    dest: "build/articles",
+  },
+  styles: {
+    src: ["src/css/**/*.css"],
+    dest: "build/css",
+  },
+  vendor: {
+    dest: "build/vendor/",
+  },
+  views: {
+    src: [
+      "src/views/**/*.pug",
+      `!${path.join(TEMPLATES_DIRECTORY, "/**/*.pug")}`,
+    ],
+    dest: "build/",
+  },
+};
+
 module.exports = function (gulp) {
   const clientConfig = require(resolveClientPath("./config.json"));
-
-  const paths = {
-    articles: {
-      src: ["src/articles/**/*.md"],
-      dest: "build/articles",
-    },
-    styles: {
-      src: ["src/css/**/*.css"],
-      dest: "build/css",
-    },
-    vendor: {
-      dest: "build/vendor/",
-    },
-    views: {
-      src: [
-        "src/views/**/*.pug",
-        `!${path.join(TEMPLATES_DIRECTORY, "/**/*.pug")}`,
-      ],
-      dest: "build/",
-    },
-  };
 
   const views = require("./src/tasks/views")(
     gulp,
