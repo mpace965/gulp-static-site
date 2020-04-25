@@ -98,6 +98,7 @@ gulp.task("watch", () => {
   gulp.watch(paths.articles.src, articles);
   gulp.watch(paths.styles.src, styles);
   gulp.watch(paths.views.src, views);
+  gulp.watch(TEMPLATES_DIRECTORY, views);
 });
 
 gulp.task("default", gulp.series("build"));
