@@ -1,4 +1,3 @@
-const pug = require("gulp-pug");
 const markdownToJson = require("gulp-markdown-to-json");
 const wrap = require("gulp-wrap");
 const rename = require("gulp-rename");
@@ -43,6 +42,13 @@ module.exports = function (gulp) {
       dest: "build/",
     },
   };
+
+  const views = require("./tasks/views")(
+    gulp,
+    paths.views,
+    config,
+    browserSync
+  );
 
   function makeTemplatePath(templateName) {
     return path.join(TEMPLATES_DIRECTORY, templateName || "layout.pug");
@@ -102,18 +108,6 @@ module.exports = function (gulp) {
     } catch (_) {
       return gulp.src(".").pipe(noop());
     }
-  }
-
-  function views() {
-    return gulp
-      .src(paths.views.src)
-      .pipe(pug({ locals: { config } }))
-      .pipe(gulp.dest(paths.views.dest))
-      .pipe(
-        browserSync.reload({
-          stream: true,
-        })
-      );
   }
 
   function styles() {
