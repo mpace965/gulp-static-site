@@ -2,8 +2,8 @@ const del = require("del");
 const browserSync = require("browser-sync").create();
 const path = require("path");
 
-const { TEMPLATES_DIRECTORY } = require("./tasks/config");
-const resolveClientPath = require("./tasks/resolveClientPath");
+const { TEMPLATES_DIRECTORY } = require("./src/config");
+const resolveClientPath = require("./src/resolveClientPath");
 
 module.exports = function (gulp) {
   const clientConfig = require(resolveClientPath("./config.json"));
@@ -29,21 +29,21 @@ module.exports = function (gulp) {
     },
   };
 
-  const views = require("./tasks/views")(
+  const views = require("./src/tasks/views")(
     gulp,
     paths.views,
     clientConfig,
     browserSync
   );
 
-  const articles = require("./tasks/articles")(
+  const articles = require("./src/tasks/articles")(
     gulp,
     paths.articles,
     clientConfig,
     browserSync
   );
 
-  const vendor = require("./tasks/vendor")(gulp, paths.vendor);
+  const vendor = require("./src/tasks/vendor")(gulp, paths.vendor);
 
   function styles() {
     return gulp

@@ -2,7 +2,7 @@ const noop = require("gulp-noop");
 const fs = require("fs");
 const path = require("path");
 
-const resolveClientPath = require("./resolveClientPath");
+const resolveClientPath = require("../resolveClientPath");
 
 function readClientJson(clientPath) {
   return JSON.parse(fs.readFileSync(resolveClientPath(clientPath)));

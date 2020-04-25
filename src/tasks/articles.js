@@ -5,7 +5,7 @@ const MarkdownIt = require("markdown-it");
 const fs = require("fs");
 const path = require("path");
 
-const { TEMPLATES_DIRECTORY } = require("./config");
+const { TEMPLATES_DIRECTORY } = require("../config");
 
 const md = new MarkdownIt({
   html: true,
