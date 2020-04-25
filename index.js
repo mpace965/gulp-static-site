@@ -1,14 +1,9 @@
-const noop = require("gulp-noop");
 const del = require("del");
 const browserSync = require("browser-sync").create();
-const fs = require("fs");
 const path = require("path");
 
 const { TEMPLATES_DIRECTORY } = require("./tasks/config");
-
-function resolveClientPath(clientPath) {
-  return path.join(process.cwd(), clientPath);
-}
+const resolveClientPath = require("./tasks/resolveClientPath");
 
 module.exports = function (gulp) {
   const clientConfig = require(resolveClientPath("./config.json"));
@@ -48,35 +43,7 @@ module.exports = function (gulp) {
     browserSync
   );
 
-  function readClientJson(clientPath) {
-    return JSON.parse(fs.readFileSync(resolveClientPath(clientPath)));
-  }
-
-  function vendor() {
-    try {
-      const vendorConfig = readClientJson("./vendor.json");
-
-      return gulp.parallel(
-        Object.entries(vendorConfig).map(([packageName, vendorConfig]) => {
-          const src = path.join(
-            "./node_modules",
-            packageName,
-            vendorConfig.root,
-            "**"
-          );
-
-          const vendorPath = path.join(
-            paths.vendor.dest,
-            vendorConfig.alias || packageName
-          );
-
-          return gulp.src(src).pipe(gulp.dest(vendorPath));
-        })
-      );
-    } catch (_) {
-      return gulp.src(".").pipe(noop());
-    }
-  }
+  const vendor = require("./tasks/vendor")(gulp, paths.vendor);
 
   function styles() {
     return gulp
