@@ -8,6 +8,7 @@ A static site generator for Gulp, loosely inspired by
 In your `Gulpfile.js`, add
 
 ```js
+// Gulpfile.js
 const gulp = require("gulp");
 const { clean, build, watch } = require("gulp-static-site")(gulp);
 ```
