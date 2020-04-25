@@ -9,8 +9,12 @@ const MarkdownIt = require("markdown-it");
 const fs = require("fs");
 const path = require("path");
 
+function resolveClientPath(clientPath) {
+  return path.join(process.cwd(), clientPath);
+}
+
 module.exports = function (gulp) {
-  const config = require(path.join(process.cwd(), "./config.json"));
+  const config = require(resolveClientPath("./config.json"));
 
   const md = new MarkdownIt({
     html: true,
@@ -44,8 +48,8 @@ module.exports = function (gulp) {
     return path.join(TEMPLATES_DIRECTORY, templateName || "layout.pug");
   }
 
-  function readJson(pathJson) {
-    return JSON.parse(path.join(process.cwd(), fs.readFileSync(pathJson)));
+  function readClientJson(clientPath) {
+    return JSON.parse(fs.readFileSync(resolveClientPath(clientPath)));
   }
 
   function articles() {
@@ -76,7 +80,7 @@ module.exports = function (gulp) {
 
   function vendor() {
     try {
-      const vendorConfig = readJson("./vendor.json");
+      const vendorConfig = readClientJson("./vendor.json");
       const srcList = Object.entries(
         vendorConfig
       ).map(([packageName, vendorConfig]) =>
