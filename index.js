@@ -27,7 +27,7 @@ const paths = {
 };
 
 module.exports = function (gulp) {
-  const clientConfig = require(resolveClientPath("./config.json"));
+  const clientConfig = require(resolveClientPath("./config"));
 
   const views = require("./src/tasks/views")(
     gulp,
@@ -61,7 +61,7 @@ module.exports = function (gulp) {
     });
 
     gulp.watch(paths.articles.src, articles);
-    gulp.watch(paths.styles.src, resources);
+    gulp.watch(paths.resources.src, resources);
     gulp.watch("vendor.json", vendor);
     gulp.watch(paths.views.src, views);
     gulp.watch(TEMPLATES_DIRECTORY, views);
