@@ -1,4 +1,3 @@
-const gulp = require("gulp");
 const pug = require("gulp-pug");
 const markdownToJson = require("gulp-markdown-to-json");
 const wrap = require("gulp-wrap");
@@ -10,154 +9,152 @@ const MarkdownIt = require("markdown-it");
 const fs = require("fs");
 const path = require("path");
 
-const config = require("./config.json");
+module.exports = function (gulp) {
+  const config = require(path.join(process.cwd(), "./config.json"));
 
-const md = new MarkdownIt({
-  html: true,
-  linkify: true,
-  typographer: true,
-});
+  const md = new MarkdownIt({
+    html: true,
+    linkify: true,
+    typographer: true,
+  });
 
-const TEMPLATES_DIRECTORY = "src/views/templates";
-const paths = {
-  articles: {
-    src: ["src/articles/**/*.md"],
-    dest: "build/articles",
-  },
-  styles: {
-    src: ["src/css/**/*.css"],
-    dest: "build/css",
-  },
-  vendor: {
-    dest: "build/vendor/",
-  },
-  views: {
-    src: [
-      "src/views/**/*.pug",
-      `!${path.join(TEMPLATES_DIRECTORY, "/**/*.pug")}`,
-    ],
-    dest: "build/",
-  },
-};
+  const TEMPLATES_DIRECTORY = "src/views/templates";
+  const paths = {
+    articles: {
+      src: ["src/articles/**/*.md"],
+      dest: "build/articles",
+    },
+    styles: {
+      src: ["src/css/**/*.css"],
+      dest: "build/css",
+    },
+    vendor: {
+      dest: "build/vendor/",
+    },
+    views: {
+      src: [
+        "src/views/**/*.pug",
+        `!${path.join(TEMPLATES_DIRECTORY, "/**/*.pug")}`,
+      ],
+      dest: "build/",
+    },
+  };
 
-function makeTemplatePath(templateName) {
-  return path.join(TEMPLATES_DIRECTORY, templateName || "layout.pug");
-}
+  function makeTemplatePath(templateName) {
+    return path.join(TEMPLATES_DIRECTORY, templateName || "layout.pug");
+  }
 
-function readJson(path) {
-  return JSON.parse(fs.readFileSync(path));
-}
+  function readJson(pathJson) {
+    return JSON.parse(path.join(process.cwd(), fs.readFileSync(pathJson)));
+  }
 
-function articles() {
-  return gulp
-    .src(paths.articles.src)
-    .pipe(markdownToJson(md.render.bind(md)))
-    .pipe(
-      wrap(
-        (data) =>
-          fs.readFileSync(makeTemplatePath(data.contents.template)).toString(),
-        { config },
-        (data) => ({
-          engine: "pug",
-          filename: makeTemplatePath(JSON.parse(data.contents).template),
-        })
-      )
-    )
-    .pipe(rename({ extname: ".html" }))
-    .pipe(gulp.dest(paths.articles.dest))
-    .pipe(
-      browserSync.reload({
-        stream: true,
-      })
-    );
-}
-
-function vendor() {
-  try {
-    const vendorConfig = readJson("./vendor.json");
-    const srcList = Object.entries(
-      vendorConfig
-    ).map(([packageName, vendorConfig]) =>
-      path.join("./node_modules/", packageName, vendorConfig.root, "**")
-    );
-
-    function aliasVendoredPackagePath(vendoredPackagePath) {
-      const [packageName] = vendoredPackagePath.split("/");
-      if (vendorConfig[packageName].alias) {
-        return vendoredPackagePath.replace(
-          packageName,
-          vendorConfig[packageName].alias
-        );
-      }
-      return vendoredPackagePath;
-    }
-
+  function articles() {
     return gulp
-      .src(srcList, { base: "./node_modules/" })
+      .src(paths.articles.src)
+      .pipe(markdownToJson(md.render.bind(md)))
       .pipe(
-        rename((path) => {
-          if (path.dirname === ".") {
-            path.basename = aliasVendoredPackagePath(path.basename);
-          } else {
-            path.dirname = aliasVendoredPackagePath(path.dirname);
-          }
-          return path;
-        })
+        wrap(
+          (data) =>
+            fs
+              .readFileSync(makeTemplatePath(data.contents.template))
+              .toString(),
+          { config },
+          (data) => ({
+            engine: "pug",
+            filename: makeTemplatePath(JSON.parse(data.contents).template),
+          })
+        )
       )
-      .pipe(gulp.dest(paths.vendor.dest))
+      .pipe(rename({ extname: ".html" }))
+      .pipe(gulp.dest(paths.articles.dest))
       .pipe(
         browserSync.reload({
           stream: true,
         })
       );
-  } catch (_) {
-    return gulp.src(".").pipe(noop());
   }
-}
 
-function views() {
-  return gulp
-    .src(paths.views.src)
-    .pipe(pug({ locals: { config } }))
-    .pipe(gulp.dest(paths.views.dest))
-    .pipe(
-      browserSync.reload({
-        stream: true,
-      })
-    );
-}
+  function vendor() {
+    try {
+      const vendorConfig = readJson("./vendor.json");
+      const srcList = Object.entries(
+        vendorConfig
+      ).map(([packageName, vendorConfig]) =>
+        path.join("./node_modules/", packageName, vendorConfig.root, "**")
+      );
 
-function styles() {
-  return gulp
-    .src(paths.styles.src)
-    .pipe(gulp.dest(paths.styles.dest))
-    .pipe(
-      browserSync.reload({
-        stream: true,
-      })
-    );
-}
+      function aliasVendoredPackagePath(vendoredPackagePath) {
+        const [packageName] = vendoredPackagePath.split("/");
+        if (vendorConfig[packageName].alias) {
+          return vendoredPackagePath.replace(
+            packageName,
+            vendorConfig[packageName].alias
+          );
+        }
+        return vendoredPackagePath;
+      }
 
-const build = gulp.parallel(articles, styles, vendor, views);
-const watch = () => {
-  browserSync.init({
-    server: {
-      baseDir: "build",
-    },
-  });
+      return gulp
+        .src(srcList, { base: "./node_modules/" })
+        .pipe(
+          rename((path) => {
+            if (path.dirname === ".") {
+              path.basename = aliasVendoredPackagePath(path.basename);
+            } else {
+              path.dirname = aliasVendoredPackagePath(path.dirname);
+            }
+            return path;
+          })
+        )
+        .pipe(gulp.dest(paths.vendor.dest))
+        .pipe(
+          browserSync.reload({
+            stream: true,
+          })
+        );
+    } catch (_) {
+      return gulp.src(".").pipe(noop());
+    }
+  }
 
-  gulp.watch(paths.articles.src, articles);
-  gulp.watch(paths.styles.src, styles);
-  gulp.watch("vendor.json", vendor);
-  gulp.watch(paths.views.src, views);
-  gulp.watch(TEMPLATES_DIRECTORY, views);
+  function views() {
+    return gulp
+      .src(paths.views.src)
+      .pipe(pug({ locals: { config } }))
+      .pipe(gulp.dest(paths.views.dest))
+      .pipe(
+        browserSync.reload({
+          stream: true,
+        })
+      );
+  }
+
+  function styles() {
+    return gulp
+      .src(paths.styles.src)
+      .pipe(gulp.dest(paths.styles.dest))
+      .pipe(
+        browserSync.reload({
+          stream: true,
+        })
+      );
+  }
+
+  const clean = () => del(["build"]);
+  const build = gulp.parallel(articles, styles, vendor, views);
+  const watch = () => {
+    browserSync.init({
+      server: {
+        baseDir: "build",
+      },
+    });
+
+    gulp.watch(paths.articles.src, articles);
+    gulp.watch(paths.styles.src, styles);
+    gulp.watch("vendor.json", vendor);
+    gulp.watch(paths.views.src, views);
+    gulp.watch(TEMPLATES_DIRECTORY, views);
+  };
+
+  return { clean, build, watch };
 };
-
-gulp.task("clean", () => del(["build"]));
-
-gulp.task("build", build);
-gulp.task("build:clean", gulp.series("clean", build));
-gulp.task("watch", gulp.series(build, watch));
-gulp.task("watch:clean", gulp.series("clean", build, watch));
-
-gulp.task("default", gulp.series("build:clean"));
