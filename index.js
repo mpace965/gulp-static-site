@@ -45,16 +45,7 @@ module.exports = function (gulp) {
 
   const vendor = require("./src/tasks/vendor")(gulp, paths.vendor);
 
-  function styles() {
-    return gulp
-      .src(paths.styles.src)
-      .pipe(gulp.dest(paths.styles.dest))
-      .pipe(
-        browserSync.reload({
-          stream: true,
-        })
-      );
-  }
+  const styles = require("./src/tasks/styles")(gulp, paths.styles, browserSync);
 
   const clean = () => del(["build"]);
   const build = gulp.parallel(articles, styles, vendor, views);
