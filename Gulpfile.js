@@ -4,6 +4,7 @@ const markdownToJson = require("gulp-markdown-to-json");
 const wrap = require("gulp-wrap");
 const rename = require("gulp-rename");
 const noop = require("gulp-noop");
+const del = require("del");
 const browserSync = require("browser-sync").create();
 const MarkdownIt = require("markdown-it");
 const fs = require("fs");
@@ -137,9 +138,8 @@ function styles() {
     );
 }
 
-gulp.task("build", gulp.parallel(articles, styles, vendor, views));
-
-gulp.task("watch", () => {
+const build = gulp.parallel(articles, styles, vendor, views);
+const watch = () => {
   browserSync.init({
     server: {
       baseDir: "build",
@@ -151,6 +151,13 @@ gulp.task("watch", () => {
   gulp.watch("vendor.json", vendor);
   gulp.watch(paths.views.src, views);
   gulp.watch(TEMPLATES_DIRECTORY, views);
-});
+};
 
-gulp.task("default", gulp.series("build"));
+gulp.task("clean", () => del(["build"]));
+
+gulp.task("build", build);
+gulp.task("build:clean", gulp.series("clean", build));
+gulp.task("watch", gulp.series(build, watch));
+gulp.task("watch:clean", gulp.series("clean", build, watch));
+
+gulp.task("default", gulp.series("build:clean"));
