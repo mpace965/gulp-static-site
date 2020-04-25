@@ -1,19 +1,67 @@
 const gulp = require("gulp");
 const pug = require("gulp-pug");
+const markdownToJson = require("gulp-markdown-to-json");
+const wrap = require("gulp-wrap");
+const rename = require("gulp-rename");
 const browserSync = require("browser-sync").create();
+const MarkdownIt = require("markdown-it");
+const fs = require("fs");
+const path = require("path");
 
 const config = require("./config.json");
 
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true,
+});
+
+const TEMPLATES_DIRECTORY = "src/views/templates";
 const paths = {
+  articles: {
+    src: ["src/articles/**/*.md"],
+    dest: "build/articles",
+  },
   styles: {
     src: ["src/css/**/*.css"],
     dest: "build/css",
   },
   views: {
-    src: ["src/views/**/*.pug", "!src/views/templates/**/*.pug"],
+    src: [
+      "src/views/**/*.pug",
+      `!${path.join(TEMPLATES_DIRECTORY, "/**/*.pug")}`,
+    ],
     dest: "build/",
   },
 };
+
+function makeTemplatePath(templateName) {
+  return path.join(TEMPLATES_DIRECTORY, templateName || "layout.pug");
+}
+
+function articles() {
+  return gulp
+    .src(paths.articles.src)
+    .pipe(markdownToJson(md.render.bind(md)))
+    .pipe(
+      wrap(
+        (data) =>
+          fs.readFileSync(makeTemplatePath(data.contents.template)).toString(),
+        { config },
+        (data) => ({
+          engine: "pug",
+          filename: makeTemplatePath(JSON.parse(data.contents).template),
+        })
+      )
+    )
+    .pipe(rename({ extname: ".html" }))
+    .pipe(gulp.dest(paths.articles.dest))
+    .pipe(
+      browserSync.reload({
+        stream: true,
+      })
+    );
+}
 
 function views() {
   return gulp
@@ -38,7 +86,7 @@ function styles() {
     );
 }
 
-gulp.task("build", gulp.parallel(views, styles));
+gulp.task("build", gulp.parallel(articles, styles, views));
 
 gulp.task("watch", () => {
   browserSync.init({
@@ -47,6 +95,7 @@ gulp.task("watch", () => {
     },
   });
 
+  gulp.watch(paths.articles.src, articles);
   gulp.watch(paths.styles.src, styles);
   gulp.watch(paths.views.src, views);
 });
