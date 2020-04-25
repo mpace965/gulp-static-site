@@ -81,41 +81,24 @@ module.exports = function (gulp) {
   function vendor() {
     try {
       const vendorConfig = readClientJson("./vendor.json");
-      const srcList = Object.entries(
-        vendorConfig
-      ).map(([packageName, vendorConfig]) =>
-        path.join("./node_modules/", packageName, vendorConfig.root, "**")
-      );
 
-      function aliasVendoredPackagePath(vendoredPackagePath) {
-        const [packageName] = vendoredPackagePath.split("/");
-        if (vendorConfig[packageName].alias) {
-          return vendoredPackagePath.replace(
+      return gulp.parallel(
+        Object.entries(vendorConfig).map(([packageName, vendorConfig]) => {
+          const src = path.join(
+            "./node_modules",
             packageName,
-            vendorConfig[packageName].alias
+            vendorConfig.root,
+            "**"
           );
-        }
-        return vendoredPackagePath;
-      }
 
-      return gulp
-        .src(srcList, { base: "./node_modules/" })
-        .pipe(
-          rename((path) => {
-            if (path.dirname === ".") {
-              path.basename = aliasVendoredPackagePath(path.basename);
-            } else {
-              path.dirname = aliasVendoredPackagePath(path.dirname);
-            }
-            return path;
-          })
-        )
-        .pipe(gulp.dest(paths.vendor.dest))
-        .pipe(
-          browserSync.reload({
-            stream: true,
-          })
-        );
+          const vendorPath = path.join(
+            paths.vendor.dest,
+            vendorConfig.alias || packageName
+          );
+
+          return gulp.src(src).pipe(gulp.dest(vendorPath));
+        })
+      );
     } catch (_) {
       return gulp.src(".").pipe(noop());
     }
